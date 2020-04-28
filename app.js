@@ -59,6 +59,72 @@ UI.prototype.clearFields = function(){
   document.getElementById('isbn').value = '';
 }
 
+// Local Storage Constructor
+function Store(){}
+
+Store.prototype.getBooks = function(){
+
+  let books;
+  if (localStorage.getItem('books')=== null) {
+    books = [];
+  } else {
+    books = JSON.parse(localStorage.getItem('books'));
+  }
+  return books;
+
+}
+
+Store.prototype.addBook = function(book){
+  
+  // instant Store
+  const store = new Store;
+
+  const books = store.getBooks();
+
+  books.push(book);
+
+  localStorage.setItem('books', JSON.stringify(books));
+
+}
+
+Store.prototype.displayBooks = function() {
+
+  const store = new Store;
+
+  const books = store.getBooks();
+    
+  books.forEach(function(book){
+    const ui = new UI;
+
+    // add book to UI
+    ui.addBookToList(book);
+
+  });
+
+}
+
+Store.prototype.removeBook = function(isbn) {
+  const store = new Store;
+
+  const books = store.getBooks();
+
+  books.forEach(function(book, index){
+    if(book.isbn === isbn) {
+      books.splice(index, 1);
+    }
+
+  });
+
+  localStorage.setItem('books', JSON.stringify(books));
+
+}
+
+
+// DOM load event
+const store = new Store;
+
+document.addEventListener('DOMContentLoaded', store.displayBooks);
+
 
 // Event Listener
 document.getElementById('book-form').addEventListener('submit', function(e){
@@ -74,6 +140,9 @@ document.getElementById('book-form').addEventListener('submit', function(e){
   // instant UI
   const ui = new UI;
 
+  // instant Store
+  const store = new Store;
+
   // validate
   if (title === '' || author === '' || isbn === ''){
     // error alert
@@ -81,6 +150,9 @@ document.getElementById('book-form').addEventListener('submit', function(e){
   } else {
     // add book to list
     ui.addBookToList(book);
+
+    // add to ls
+    store.addBook(book);
 
     // show success
     ui.showAlert('Book Added!', 'success');
@@ -102,6 +174,11 @@ document.getElementById('book-list').addEventListener
 
   // delete book
   ui.deleteBook(e.target);
+
+  // instant store
+  const store = new Store();
+  // remove from ls
+  store.removeBook(e.target.parentElement.previousElementSibling.textContent);
 
   // show message
   ui.showAlert('Book Removed!', 'success');
